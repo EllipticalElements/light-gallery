@@ -1,0 +1,95 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../elliptical-polymer-behaviors/component-behavior.html">
+<link rel="stylesheet" href="dist/css/lightgallery.css">
+<script src="dist/js/lightgallery.js"></script>
+<style is="custom-style">
+   .lg-backdrop{
+       background:var(--light-gallery-background,#000);
+       opacity:var(--light-gallery-opacity,.8);
+       z-index:var(--light-gallery-z-index,10000);
+   }
+   .lg-sub-html{
+       background:var(--light-gallery-toolbar-background,transparent);
+   }
+   .lg-toolbar{
+        background:var(--light-gallery-toolbar-background,transparent);
+   }
+   .lg img.lg-image{
+       box-shadow:var(--light-gallery-image-shadow,0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12), 0 5px 5px -3px rgba(0, 0, 0, 0.4));
+   }
+   .lg-outer{
+       z-index:var(--light-gallery-outer-z-index,10500);
+   }
+</style>
+<script>
+
+    Polymer({
+
+        is: 'light-gallery',
+
+        behaviors:[Elliptical.ComponentBehavior],
+
+        properties: {
+           
+           jsonData:{
+             type:String,
+             value:null
+           },
+
+           _service:{
+             type:Object,
+             value:null
+           },
+
+           _dataSource:{
+             type:Array,
+             value:[]
+           }
+
+        },
+        
+        listeners:{
+            
+        },
+
+        ready:function(){
+            this._setService();
+            this._setDataSource();
+        },
+
+        _setService:function(){
+           this._service=this.$service(this.service);
+        },
+
+        _setDataSource:function(){
+           if(this.jsonData) this._dataSource=JSON.parse(this.jsonData);
+           else console.warn('WARNING: LIGHT-GALLERY requires a json-data attribute.');
+        },
+
+        _createPlugin:function(index,data){
+            $(this).lightGallery({
+                dynamic: true,
+                dynamicEl:data,
+                index:index
+            });
+        },
+
+        show:function(index){
+           var self=this; 
+           if(index===undefined) index=0;
+           var service=this._service;
+           if(!service){
+            console.warn('WARNING: LIGHT-GALLERY requires an injected service.');
+            return;
+           }
+           service.get({data:this._dataSource},function(err,result){
+               if(!err){
+                 self._createPlugin(index,result);
+               }else{
+                 console.log('ERROR: LIGHT-GALLERY injected service returned an error.');
+               }
+           });
+        }
+    });
+
+</script>
